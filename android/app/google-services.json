@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "486531732561",
+    "project_id": "studentology-59005",
+    "storage_bucket": "studentology-59005.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486531732561:android:ac8face3acccc323615470",
+        "android_client_info": {
+          "package_name": "com.example.studentology"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDS979AhXH2ggtMdTahoyVd2FjNWLa8OA4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
