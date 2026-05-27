@@ -77,40 +77,40 @@ class TaskCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final priorityColor = _priorityColor(task.priority);
     final borderColor =
-        isDark ? AppTheme.cartoonBorderDark : AppTheme.cartoonBorder;
+    isDark ? AppTheme.cartoonBorderDark : AppTheme.cartoonBorder;
     final dimColor =
-        Theme.of(context).colorScheme.onSurface.withOpacity(0.38);
+    Theme.of(context).colorScheme.onSurface.withOpacity(0.38);
 
     final BoxDecoration decoration = selectMode
         ? BoxDecoration(
-            color: isSelected
-                ? const Color(0xFFFFB347).withOpacity(0.08)
-                : Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(50),
-            border: Border.all(
-              color: isSelected
-                  ? const Color(0xFFFFB347)
-                  : Colors.black.withOpacity(0.12),
-              width: isSelected ? 2.0 : 1.5,
-            ),
-            boxShadow: isDark ? const [] : AppTheme.cartoonShadow,
-          )
+      color: isSelected
+          ? const Color(0xFFFFB347).withOpacity(0.08)
+          : Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.circular(50),
+      border: Border.all(
+        color: isSelected
+            ? const Color(0xFFFFB347)
+            : Colors.black.withOpacity(0.12),
+        width: isSelected ? 2.0 : 1.5,
+      ),
+      boxShadow: (isDark || isSelected) ? const [] : AppTheme.cartoonShadow,
+    )
         : BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(50),
-            border: Border.all(
-              color: task.isOverdue
-                  ? AppTheme.errorColor.withOpacity(0.7)
-                  : borderColor,
-              width: 1.5,
-            ),
-            boxShadow: isDark ? const [] : AppTheme.cartoonShadow,
-          );
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.circular(50),
+      border: Border.all(
+        color: task.isOverdue
+            ? AppTheme.errorColor.withOpacity(0.7)
+            : borderColor,
+        width: 1.5,
+      ),
+      boxShadow: isDark ? const [] : AppTheme.cartoonShadow,
+    );
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: selectMode ? onSelectTap : onTap,
-      onLongPress: onLongPress,
+      onLongPress: selectMode ? onSelectTap : onLongPress,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: decoration,
@@ -207,7 +207,7 @@ class TaskCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    );  
   }
 }
 

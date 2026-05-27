@@ -222,57 +222,6 @@ class _ExamsScreenState extends State<ExamsScreen>
     );
   }
 
-  Widget _buildActionBar() {
-    return Container(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(
-            top: BorderSide(color: Colors.black.withOpacity(0.1), width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 0,
-              offset: const Offset(0, -3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Text(
-              '${_selectedIds.length} item${_selectedIds.length == 1 ? '' : 's'} selected',
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).textTheme.bodySmall!.color,
-              ),
-            ),
-            const Spacer(),
-            ElevatedButton.icon(
-              onPressed: _selectedIds.isEmpty ? null : _deleteSelected,
-              icon: const Icon(Icons.delete_outline_rounded,
-                  color: Colors.white, size: 18),
-              label: Text(
-                'Delete',
-                style: GoogleFonts.roboto(
-                    fontWeight: FontWeight.w700, color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF5350),
-                disabledBackgroundColor: Colors.grey.shade400,
-                shape: const StadiumBorder(),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                elevation: 0,
-                side: BorderSide(
-                    color: Colors.black.withOpacity(0.15), width: 1.5),
-              ),
-            ),
-          ],
-        ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final ep = context.watch<ExamProvider>();
@@ -370,48 +319,52 @@ class _ExamsScreenState extends State<ExamsScreen>
               ),
             ),
       body: Consumer<ExamProvider>(
-        builder: (_, ep, __) => Column(
+        builder: (_, ep, __) => TabBarView(
+          controller: _tabController,
           children: [
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _ExamList(
-                    exams: ep.upcomingExams,
-                    emptyIcon: Icons.event_available_outlined,
-                    emptyMessage: 'No upcoming exams. Enjoy the break!',
-                    onEdit: _openForm,
-                    onAddScore: _showScoreDialog,
-                    isSelectMode: _isSelectMode,
-                    selectedIds: _selectedIds,
-                    onLongPress: _onLongPress,
-                    onSelectTap: _onSelectTap,
-                  ),
-                  _ExamList(
-                    exams: ep.pastExams.reversed.toList(),
-                    emptyIcon: Icons.history_edu_outlined,
-                    emptyMessage: 'No past exams recorded yet.',
-                    onEdit: _openForm,
-                    onAddScore: _showScoreDialog,
-                    isSelectMode: _isSelectMode,
-                    selectedIds: _selectedIds,
-                    onLongPress: _onLongPress,
-                    onSelectTap: _onSelectTap,
-                  ),
-                ],
-              ),
+            _ExamList(
+              exams: ep.upcomingExams,
+              emptyIcon: Icons.event_available_outlined,
+              emptyMessage: 'No upcoming exams. Enjoy the break!',
+              onEdit: _openForm,
+              onAddScore: _showScoreDialog,
+              isSelectMode: _isSelectMode,
+              selectedIds: _selectedIds,
+              onLongPress: _onLongPress,
+              onSelectTap: _onSelectTap,
             ),
-            if (_isSelectMode) _buildActionBar(),
+            _ExamList(
+              exams: ep.pastExams.reversed.toList(),
+              emptyIcon: Icons.history_edu_outlined,
+              emptyMessage: 'No past exams recorded yet.',
+              onEdit: _openForm,
+              onAddScore: _showScoreDialog,
+              isSelectMode: _isSelectMode,
+              selectedIds: _selectedIds,
+              onLongPress: _onLongPress,
+              onSelectTap: _onSelectTap,
+            ),
           ],
         ),
       ),
-      floatingActionButton: _isSelectMode
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: () => _openForm(),
-              icon: const Icon(Icons.add),
-              label: const Text('Add Exam'),
-            ),
+      floatingActionButton: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        transitionBuilder: (child, animation) =>
+            ScaleTransition(scale: animation, child: child),
+        child: _isSelectMode
+            ? FloatingActionButton(
+                key: const ValueKey('delete-fab'),
+                onPressed: _selectedIds.isEmpty ? null : _deleteSelected,
+                backgroundColor: const Color(0xFFEF5350),
+                child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+              )
+            : FloatingActionButton.extended(
+                key: const ValueKey('add-fab'),
+                onPressed: () => _openForm(),
+                icon: const Icon(Icons.add),
+                label: const Text('Add Exam'),
+              ),
+      ),
       ),
     );
   }
@@ -537,37 +490,37 @@ class _ExamCard extends StatelessWidget {
 
     final BoxDecoration decoration = selectMode
         ? BoxDecoration(
-            color: isSelected
-                ? const Color(0xFFFFB347).withOpacity(0.08)
-                : Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isSelected
-                  ? const Color(0xFFFFB347)
-                  : Colors.black.withOpacity(0.12),
-              width: isSelected ? 2.0 : 1.5,
-            ),
-            boxShadow: isDark ? const [] : AppTheme.cartoonShadow,
-          )
+      color: isSelected
+          ? const Color(0xFFFFB347).withOpacity(0.08)
+          : Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(
+        color: isSelected
+            ? const Color(0xFFFFB347)
+            : Colors.black.withOpacity(0.12),
+        width: isSelected ? 2.0 : 1.5,
+      ),
+      boxShadow: (isDark || isSelected) ? const [] : AppTheme.cartoonShadow,
+    )
         : BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isUrgent
-                  ? AppTheme.warningColor
-                  : (isDark
-                      ? AppTheme.cartoonBorderDark
-                      : AppTheme.cartoonBorder),
-              width: isUrgent ? 2.0 : 1.5,
-            ),
-            boxShadow:
-                isDark ? const [] : AppTheme.cartoonShadow,
-          );
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(
+        color: isUrgent
+            ? AppTheme.warningColor
+            : (isDark
+            ? AppTheme.cartoonBorderDark
+            : AppTheme.cartoonBorder),
+        width: isUrgent ? 2.0 : 1.5,
+      ),
+      boxShadow:
+      isDark ? const [] : AppTheme.cartoonShadow,
+    );
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: selectMode ? onSelectTap : onTap,
-      onLongPress: onLongPress,
+      onLongPress: selectMode ? onSelectTap : onLongPress,
       child: Container(
         decoration: decoration,
         child: Column(

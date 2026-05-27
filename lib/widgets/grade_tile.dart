@@ -56,7 +56,7 @@ class GradeTile extends StatelessWidget {
                   : Colors.black.withOpacity(0.12),
               width: isSelected ? 2.0 : 1.5,
             ),
-            boxShadow: isDark ? const [] : AppTheme.cartoonShadow,
+            boxShadow: (isDark || isSelected) ? const [] : AppTheme.cartoonShadow,
           )
         : BoxDecoration(
             color: cs.surface,

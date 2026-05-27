@@ -154,6 +154,110 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
     });
   }
 
+  Future<void> _deleteSelected() async {
+    final sp = context.read<SubjectProvider>();
+    final count = _selectedIds.length;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(ctx).dialogBackgroundColor,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.black, width: 1.5),
+            boxShadow: const [
+              BoxShadow(
+                  color: Colors.black,
+                  blurRadius: 0,
+                  spreadRadius: 0,
+                  offset: Offset(5, 5)),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Delete $count item${count == 1 ? '' : 's'}?',
+                  style: GoogleFonts.roboto(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      color: Theme.of(ctx).textTheme.bodyLarge!.color),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'This will permanently remove the selected subjects.',
+                  style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Theme.of(ctx).textTheme.bodySmall!.color,
+                      height: 1.5),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF5350),
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                      side: const BorderSide(color: Colors.black, width: 1.5),
+                    ),
+                    child: Text('Delete',
+                        style: GoogleFonts.roboto(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            fontSize: 15)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.black, width: 1.5),
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      foregroundColor: Theme.of(ctx).textTheme.bodyLarge!.color,
+                    ),
+                    child: Text('Cancel',
+                        style: GoogleFonts.roboto(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                            color: Theme.of(ctx).textTheme.bodyLarge!.color)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final ids = List<String>.from(_selectedIds);
+    _exitSelectMode();
+    for (final id in ids) {
+      await sp.deleteSubject(id);
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$count item${count == 1 ? '' : 's'} deleted'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: const StadiumBorder(),
+      ),
+    );
+  }
+
   void _openAddSubjectSheet() {
     final userId = context.read<AuthProvider>().userId ?? '';
     showModalBottomSheet(
@@ -289,177 +393,6 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
     );
   }
 
-  Widget _buildActionBar(SubjectProvider sp) {
-    final count = _selectedIds.length;
-    return SafeArea(
-      child: Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      decoration: BoxDecoration(
-        color: context.cardBg,
-        border: Border(
-          top: BorderSide(color: context.cardBorder, width: 1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text(
-            '$count item${count == 1 ? '' : 's'} selected',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: context.textSecondary,
-            ),
-          ),
-          const Spacer(),
-          ElevatedButton.icon(
-            onPressed: count == 0
-                ? null
-                : () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      barrierDismissible: true,
-                      builder: (ctx) => Dialog(
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        insetPadding:
-                            const EdgeInsets.symmetric(horizontal: 24),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(ctx).dialogBackgroundColor,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                                color: Colors.black, width: 1.5),
-                            boxShadow: const [
-                              BoxShadow(
-                                  color: Colors.black,
-                                  blurRadius: 0,
-                                  spreadRadius: 0,
-                                  offset: Offset(5, 5)),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Delete $count item${count == 1 ? '' : 's'}?',
-                                  style: GoogleFonts.roboto(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 18,
-                                      color: Theme.of(ctx)
-                                          .textTheme
-                                          .bodyLarge!
-                                          .color),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'This will permanently remove the selected subjects.',
-                                  style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      color: Theme.of(ctx)
-                                          .textTheme
-                                          .bodySmall!
-                                          .color,
-                                      height: 1.5),
-                                ),
-                                const SizedBox(height: 24),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: () =>
-                                        Navigator.pop(ctx, true),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          const Color(0xFFEF5350),
-                                      shape: const StadiumBorder(),
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
-                                      elevation: 0,
-                                      side: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    child: Text('Delete',
-                                        style: GoogleFonts.roboto(
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
-                                            fontSize: 15)),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: OutlinedButton(
-                                    onPressed: () =>
-                                        Navigator.pop(ctx, false),
-                                    style: OutlinedButton.styleFrom(
-                                      side: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                      shape: const StadiumBorder(),
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
-                                      foregroundColor: Theme.of(ctx)
-                                          .textTheme
-                                          .bodyLarge!
-                                          .color,
-                                    ),
-                                    child: Text('Cancel',
-                                        style: GoogleFonts.roboto(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 15,
-                                            color: Theme.of(ctx)
-                                                .textTheme
-                                                .bodyLarge!
-                                                .color)),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                    if (confirmed != true || !mounted) return;
-                    final ids = List<String>.from(_selectedIds);
-                    _exitSelectMode();
-                    for (final id in ids) {
-                      await sp.deleteSubject(id);
-                    }
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                            '$count item${count == 1 ? '' : 's'} deleted'),
-                        backgroundColor: Colors.green,
-                        behavior: SnackBarBehavior.floating,
-                        shape: const StadiumBorder(),
-                      ),
-                    );
-                  },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF5350),
-              foregroundColor: Colors.white,
-              shape: const StadiumBorder(
-                side: BorderSide(color: Colors.black26, width: 1),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-            icon: const Icon(Icons.delete_outline_rounded, size: 18),
-            label: const Text('Delete',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    ));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -580,14 +513,24 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                     ),
                   ],
                 ),
-          floatingActionButton: _selectMode
-              ? null
-              : FloatingActionButton.extended(
-                  onPressed: _openAddSubjectSheet,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Subject'),
-                ),
-          bottomNavigationBar: _selectMode ? _buildActionBar(sp) : null,
+          floatingActionButton: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) =>
+                ScaleTransition(scale: animation, child: child),
+            child: _selectMode
+                ? FloatingActionButton(
+                    key: const ValueKey('delete-fab'),
+                    onPressed: _selectedIds.isEmpty ? null : _deleteSelected,
+                    backgroundColor: const Color(0xFFEF5350),
+                    child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+                  )
+                : FloatingActionButton.extended(
+                    key: const ValueKey('add-fab'),
+                    onPressed: _openAddSubjectSheet,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Subject'),
+                  ),
+          ),
         );
       },
       ),
@@ -658,7 +601,7 @@ class _SubjectDetailCard extends StatelessWidget {
                   : Colors.black.withOpacity(0.12),
               width: isSelected ? 2.0 : 1.5,
             ),
-            boxShadow: [
+            boxShadow: isSelected ? const [] : [
               BoxShadow(
                 color: Colors.black.withOpacity(0.12),
                 blurRadius: 0,

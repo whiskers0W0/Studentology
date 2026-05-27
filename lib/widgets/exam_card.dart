@@ -5,13 +5,13 @@ import 'package:studentology/models/exam_model.dart';
 class ExamCard extends StatelessWidget {
   final ExamModel exam;
   final VoidCallback? onAddScore;
-  final VoidCallback onDelete;
+  final VoidCallback? onDelete;
 
   const ExamCard({
     super.key,
     required this.exam,
     this.onAddScore,
-    required this.onDelete,
+    this.onDelete,
   });
 
   String _formatScheduled(DateTime d) {
@@ -106,15 +106,17 @@ class ExamCard extends StatelessWidget {
                         ),
                       if (!exam.isPast && daysUntil <= 3)
                         _UrgencyChip(daysUntil: daysUntil),
-                      const SizedBox(width: 4),
-                      GestureDetector(
-                        onTap: onDelete,
-                        child: const Icon(
-                          Icons.delete_outline,
-                          size: 18,
-                          color: AppTheme.errorColor,
+                      if (onDelete != null) ...[
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: onDelete,
+                          child: const Icon(
+                            Icons.delete_outline,
+                            size: 18,
+                            color: AppTheme.errorColor,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ],

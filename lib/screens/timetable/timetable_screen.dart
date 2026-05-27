@@ -90,7 +90,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
 
   // ── Delete selected ──────────────────────────────────────────────────────
 
-  Future<void> _deleteSelected(SubjectProvider sp) async {
+  Future<void> _deleteSelected() async {
+    final sp = context.read<SubjectProvider>();
     final count = _selectedSubjectIds.length;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -350,56 +351,6 @@ class _TimetableScreenState extends State<TimetableScreen> {
     );
   }
 
-  Widget _buildActionBar(SubjectProvider sp) {
-    final count = _selectedSubjectIds.length;
-    return Container(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(
-            top: BorderSide(color: Colors.black.withOpacity(0.1), width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 0,
-              offset: const Offset(0, -3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Text(
-              '$count item${count == 1 ? '' : 's'} selected',
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).textTheme.bodySmall!.color,
-              ),
-            ),
-            const Spacer(),
-            ElevatedButton.icon(
-              onPressed: count == 0 ? null : () => _deleteSelected(sp),
-              icon: const Icon(Icons.delete_outline_rounded,
-                  color: Colors.white, size: 18),
-              label: Text('Delete',
-                  style: GoogleFonts.roboto(
-                      fontWeight: FontWeight.w700, color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF5350),
-                disabledBackgroundColor: Colors.grey.shade400,
-                shape: const StadiumBorder(),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                elevation: 0,
-                side: BorderSide(
-                    color: Colors.black.withOpacity(0.15), width: 1.5),
-              ),
-            ),
-          ],
-        ),
-    );
-  }
-
   // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
@@ -479,24 +430,34 @@ class _TimetableScreenState extends State<TimetableScreen> {
                       ? const Center(child: CircularProgressIndicator())
                       : _buildContent(filtered),
                 ),
-                if (_selectMode) _buildActionBar(sp),
               ],
             ),
-            floatingActionButton: _selectMode
-                ? null
-                : FloatingActionButton.extended(
-                    onPressed: _openAddSubjectSheet,
-                    backgroundColor: const Color(0xFFFFB347),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: const StadiumBorder(
-                        side: BorderSide(color: Colors.black, width: 1.5)),
-                    icon: const Icon(Icons.add),
-                    label: const Text(
-                      'Add Subject',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+            floatingActionButton: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, animation) =>
+                  ScaleTransition(scale: animation, child: child),
+              child: _selectMode
+                  ? FloatingActionButton(
+                      key: const ValueKey('delete-fab'),
+                      onPressed: _selectedSubjectIds.isEmpty ? null : _deleteSelected,
+                      backgroundColor: const Color(0xFFEF5350),
+                      child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+                    )
+                  : FloatingActionButton.extended(
+                      key: const ValueKey('add-fab'),
+                      onPressed: _openAddSubjectSheet,
+                      backgroundColor: const Color(0xFFFFB347),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: const StadiumBorder(
+                          side: BorderSide(color: Colors.black, width: 1.5)),
+                      icon: const Icon(Icons.add),
+                      label: const Text(
+                        'Add Subject',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
-                  ),
+            ),
           ),
         );
       },
@@ -552,7 +513,7 @@ class _SubjectPillCard extends StatelessWidget {
                   : Colors.black.withOpacity(0.12),
               width: isSelected ? 2.0 : 1.5,
             ),
-            boxShadow: isDark ? const [] : AppTheme.cartoonShadow,
+            boxShadow: (isDark || isSelected) ? const [] : AppTheme.cartoonShadow,
           )
         : BoxDecoration(
             color: Theme.of(context).colorScheme.surface,

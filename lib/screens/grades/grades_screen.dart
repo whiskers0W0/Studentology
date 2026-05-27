@@ -193,55 +193,6 @@ class _GradesScreenState extends State<GradesScreen> {
     );
   }
 
-  Widget _buildActionBar() {
-    final count = _selectedIds.length;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      decoration: BoxDecoration(
-        color: context.cardBg,
-        border: Border(
-          top: BorderSide(color: context.cardBorder, width: 1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text(
-            '$count item${count == 1 ? '' : 's'} selected',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: context.textSecondary,
-            ),
-          ),
-          const Spacer(),
-          ElevatedButton.icon(
-            onPressed: count == 0 ? null : _deleteSelected,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF5350),
-              foregroundColor: Colors.white,
-              shape: const StadiumBorder(
-                side: BorderSide(
-                  color: Colors.black26,
-                  width: 1,
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-            icon: const Icon(Icons.delete_outline_rounded, size: 18),
-            label: const Text('Delete', style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildGWACard(List<GradeModel> grades, double? gwa, String system) {
     final hasGrades = grades.isNotEmpty && gwa != null;
     final gwaDisplay = hasGrades ? _formatGWA(gwa!, system) : '--';
@@ -424,16 +375,26 @@ class _GradesScreenState extends State<GradesScreen> {
                   onSelectTap: _onSelectTap,
                 ),
               ),
-              if (_isSelectMode) _buildActionBar(),
             ],
           ),
-          floatingActionButton: _isSelectMode
-              ? null
-              : FloatingActionButton.extended(
-                  onPressed: () => _openForm(userId),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Grade'),
-                ),
+          floatingActionButton: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) =>
+                ScaleTransition(scale: animation, child: child),
+            child: _isSelectMode
+                ? FloatingActionButton(
+                    key: const ValueKey('delete-fab'),
+                    onPressed: _selectedIds.isEmpty ? null : _deleteSelected,
+                    backgroundColor: const Color(0xFFEF5350),
+                    child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+                  )
+                : FloatingActionButton.extended(
+                    key: const ValueKey('add-fab'),
+                    onPressed: () => _openForm(userId),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Grade'),
+                  ),
+          ),
         );
       },
       ),

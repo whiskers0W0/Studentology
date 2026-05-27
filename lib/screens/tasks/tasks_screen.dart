@@ -167,7 +167,7 @@ class _TasksScreenState extends State<TasksScreen>
     );
   }
 
-  Future<void> _deleteSelected(List<TaskModel> items) async {
+  Future<void> _deleteSelected() async {
     final count = _selectedIds.length;
     final confirmed = await _showDeleteConfirmation(
       context,
@@ -192,56 +192,6 @@ class _TasksScreenState extends State<TasksScreen>
         behavior: SnackBarBehavior.floating,
         shape: const StadiumBorder(),
       ),
-    );
-  }
-
-  Widget _buildActionBar(List<TaskModel> items) {
-    return Container(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(
-            top: BorderSide(color: Colors.black.withOpacity(0.1), width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 0,
-              offset: const Offset(0, -3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Text(
-              '${_selectedIds.length} item${_selectedIds.length == 1 ? '' : 's'} selected',
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).textTheme.bodySmall!.color,
-              ),
-            ),
-            const Spacer(),
-            ElevatedButton.icon(
-              onPressed:
-                  _selectedIds.isEmpty ? null : () => _deleteSelected(items),
-              icon: const Icon(Icons.delete_outline_rounded,
-                  color: Colors.white, size: 18),
-              label: Text('Delete',
-                  style: GoogleFonts.roboto(
-                      fontWeight: FontWeight.w700, color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF5350),
-                disabledBackgroundColor: Colors.grey.shade400,
-                shape: const StadiumBorder(),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                elevation: 0,
-                side: BorderSide(
-                    color: Colors.black.withOpacity(0.15), width: 1.5),
-              ),
-            ),
-          ],
-        ),
     );
   }
 
@@ -419,43 +369,47 @@ class _TasksScreenState extends State<TasksScreen>
                   ),
                 ),
               ),
-        body: Column(
+        body: TabBarView(
+          controller: _tabController,
           children: [
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildList(
-                    tasks: pending,
-                    tp: tp,
-                    emptyIcon: Icons.task_alt_outlined,
-                    emptyMessage: 'All caught up! No pending tasks.',
-                  ),
-                  _buildList(
-                    tasks: completed,
-                    tp: tp,
-                    emptyIcon: Icons.check_circle_outline_rounded,
-                    emptyMessage: 'No completed tasks yet.',
-                  ),
-                  _buildList(
-                    tasks: overdue,
-                    tp: tp,
-                    emptyIcon: Icons.warning_amber_outlined,
-                    emptyMessage: 'No overdue tasks. Nice work!',
-                  ),
-                ],
-              ),
+            _buildList(
+              tasks: pending,
+              tp: tp,
+              emptyIcon: Icons.task_alt_outlined,
+              emptyMessage: 'All caught up! No pending tasks.',
             ),
-            if (_isSelectMode) _buildActionBar(currentItems),
+            _buildList(
+              tasks: completed,
+              tp: tp,
+              emptyIcon: Icons.check_circle_outline_rounded,
+              emptyMessage: 'No completed tasks yet.',
+            ),
+            _buildList(
+              tasks: overdue,
+              tp: tp,
+              emptyIcon: Icons.warning_amber_outlined,
+              emptyMessage: 'No overdue tasks. Nice work!',
+            ),
           ],
         ),
-        floatingActionButton: _isSelectMode
-            ? null
-            : FloatingActionButton.extended(
-                onPressed: () => _openForm(),
-                icon: const Icon(Icons.add),
-                label: const Text('Add Task'),
-              ),
+        floatingActionButton: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (child, animation) =>
+              ScaleTransition(scale: animation, child: child),
+          child: _isSelectMode
+              ? FloatingActionButton(
+                  key: const ValueKey('delete-fab'),
+                  onPressed: _selectedIds.isEmpty ? null : _deleteSelected,
+                  backgroundColor: const Color(0xFFEF5350),
+                  child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+                )
+              : FloatingActionButton.extended(
+                  key: const ValueKey('add-fab'),
+                  onPressed: () => _openForm(),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Task'),
+                ),
+        ),
       ),
     );
   }

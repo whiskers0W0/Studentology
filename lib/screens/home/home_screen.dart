@@ -535,11 +535,7 @@ class _DashboardTabState extends State<_DashboardTab> {
                       return Column(
                         children: [
                           for (final e in upcoming) ...[
-                            ExamCard(
-                              exam: e,
-                              onAddScore: null,
-                              onDelete: () {}, // delete from Exams screen
-                            ),
+                            ExamCard(exam: e),
                             if (e != upcoming.last)
                               const SizedBox(height: 10),
                           ],

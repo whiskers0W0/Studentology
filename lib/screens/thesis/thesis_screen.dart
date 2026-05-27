@@ -552,11 +552,112 @@ class _ThesisScreenState extends State<ThesisScreen>
           itemBuilder: (_, i) => _SavedIdeaCard(
             idea: ideas[i],
             onDelete: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                barrierDismissible: true,
+                builder: (ctx) => Dialog(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx).dialogBackgroundColor,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.black, width: 1.5),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black,
+                          blurRadius: 0,
+                          spreadRadius: 0,
+                          offset: Offset(5, 5),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.bookmark_remove_outlined,
+                                  color: AppTheme.primaryAccent, size: 22),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Remove from saved?',
+                                style: GoogleFonts.roboto(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 18,
+                                  color: Theme.of(ctx).textTheme.bodyLarge!.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'This idea will be removed from your saved list. You can always save it again from the Generate tab.',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: Theme.of(ctx).textTheme.bodySmall!.color,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFEF5350),
+                                shape: const StadiumBorder(),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                elevation: 0,
+                                side: const BorderSide(color: Colors.black, width: 1.5),
+                              ),
+                              child: Text(
+                                'Remove',
+                                style: GoogleFonts.roboto(
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Colors.black, width: 1.5),
+                                shape: const StadiumBorder(),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                foregroundColor: Theme.of(ctx).textTheme.bodyLarge!.color,
+                              ),
+                              child: Text(
+                                'Cancel',
+                                style: GoogleFonts.roboto(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                  color: Theme.of(ctx).textTheme.bodyLarge!.color,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+              if (confirmed != true || !mounted) return;
               await _firestore.deleteThesisIdea(userId, ideas[i].id);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Idea removed'),
+                    content: Text('Idea removed from saved'),
                     behavior: SnackBarBehavior.floating,
                     shape: StadiumBorder(),
                   ),
@@ -741,11 +842,6 @@ class _SavedIdeaCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 2, right: 8),
-                          child: Icon(Icons.bookmark,
-                              color: AppTheme.primaryAccent, size: 16),
-                        ),
                         Expanded(
                           child: Text(
                             idea.title,
@@ -758,6 +854,14 @@ class _SavedIdeaCard extends StatelessWidget {
                                       .onSurface,
                                   fontWeight: FontWeight.w600,
                                 ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: onDelete,
+                          child: const Icon(
+                            Icons.bookmark,
+                            color: AppTheme.successColor,
+                            size: 22,
                           ),
                         ),
                       ],
@@ -802,28 +906,6 @@ class _SavedIdeaCard extends StatelessWidget {
                             .toList(),
                       ),
                     ],
-
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: OutlinedButton.icon(
-                        onPressed: onDelete,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.errorColor,
-                          side: const BorderSide(
-                              color: AppTheme.errorColor, width: 1.2),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          shape: const StadiumBorder(),
-                          textStyle: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w600),
-                        ),
-                        icon: const Icon(Icons.delete_outline, size: 16),
-                        label: const Text('Remove'),
-                      ),
-                    ),
                   ],
                 ),
               ),
